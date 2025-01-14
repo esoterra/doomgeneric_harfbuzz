@@ -14,7 +14,7 @@ Create a file named doomgeneric_yourplatform.c and just implement these function
 
 |Functions            |Description|
 |---------------------|-----------|
-|DG_Init              |Initialize your platfrom (create window, framebuffer, etc...).
+|DG_Init              |Initialize your platform (create window, framebuffer, etc...).
 |DG_DrawFrame         |Frame is ready in DG_ScreenBuffer. Copy it to your platform's screen.
 |DG_SleepMs           |Sleep in milliseconds.
 |DG_GetTicksMs        |The ticks passed since launch in milliseconds.

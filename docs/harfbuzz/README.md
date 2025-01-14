@@ -2,10 +2,14 @@
 
 ## TODOs
 
-- [ ] Experiment with `Bad-Apple-Font`
-- [ ] Experiment with `harfbuzz-wasm-examples`
+- [ ] Implement `doomgeneric_cliargs` test tool
+  - Parse the input from arg or file and run the game
+  - Output an image of the final frame
+  - Bonus: try to add arg to output a video of all frames
+- [ ] Experiment with building fonts
+  - Experiment with `Bad-Apple-Font`
+  - Experiment with `harfbuzz-wasm-examples`
 - [ ] Get doomgeneric building as a font
-- [ ] Parse the input and run the game
 - [ ] Draw the frame output as glyphs
 
 ## Premise
@@ -58,7 +62,7 @@ doomgeneric is a source port of doom classic designed to be as easy to port as p
 
 |Functions            |Description|
 |---------------------|-----------|
-|DG_Init              |Initialize your platfrom (create window, framebuffer, etc...).
+|DG_Init              |Initialize your platform (create window, framebuffer, etc...).
 |DG_DrawFrame         |Frame is ready in DG_ScreenBuffer. Copy it to your platform's screen.
 |DG_SleepMs           |Sleep in milliseconds.
 |DG_GetTicksMs        |The ticks passed since launch in milliseconds.
@@ -70,17 +74,31 @@ doomgeneric is a source port of doom classic designed to be as easy to port as p
 
 ## Design
 
+### No-ops
+
+Some of the expected functions should be able to be implemented as no-ops.
+* `DG_Init` - available if we need it for our own initialization but not required for doom to run
+* `DG_DrawFrame` - we don't want/need to render every frame, just the last one. so we won't be doing any work here.
+* `DG_SetWindowTitle` - we don't need to set a title. maybe at some point we'll emit glyphs for this for fun but it's not needed.
+
+### Time
+
+The `DG_SleepMs` and `DG_GetTicksMs` functions will need to be mocked since we don't have the ability to sleep or interest in doing so. Both calling `DG_SleepMs` and advancing to the next frame should cause an internally tracked counter to advance.
+
+**Open Questions:**
+1. does `doomgeneric_Tick()` always advance to the next frame, waiting if needed, or will it return without advancing a frame if not enough time has passed?
+
 ### Input Handling
 
 Iterate over the string of characters treating it like a sequence of frames.
 
-Each `t` in the input represents a "tick" and the start of a new frame. Any other character indicates that the [corresponding key](#key-mapping-table) was pressed during that frame.
+Each `f` in the input represents the start of a new frame. Any other character indicates that the [corresponding key](#key-mapping-table) was pressed during that frame.
 
 In practical terms, this means we'll need to
 1. create a structure to hold the keys currently held down
 2. set a key to pressed whenever we see its corresponding codepoint
 3. implement `DG_GetKey` to read from the structure
-4. when we encounter a `t`, call `doomgeneric_Tick()`, then reset the keypress structure
+4. when we encounter a `f`, advance the game to the next frame, then reset the keypress structure
 5. repeat 2-4 until we reach the final frame
 
 ### Drawing
